@@ -53,6 +53,7 @@
 
 <script lang="ts">
   import { baseURL } from '@/api/axios.config'
+  import { extname } from 'path-browserify'
   import { post, Response } from '@/api/http'
   import { getCheJian, getTableList } from '@/api/url'
   import { renderTag, renderRadioButtonGroup, renderSelect, renderDatePicker } from '@/hooks/form'
@@ -84,6 +85,7 @@
   } from 'naive-ui'
   import type { UploadFileInfo } from 'naive-ui'
   import { defineComponent, h, onMounted, ref, nextTick, shallowReactive } from 'vue'
+  import UploadSettledFileInfo from 'naive-ui'
   const modalDialog = ref<ModalDialogType | null>(null)
   const modalDialog2 = ref<ModalDialogType | null>(null)
   const itemDataFormRef = ref<DataFormType | null>(null)
@@ -181,7 +183,7 @@
         return h(NInput, {
           value: formItem.value.value,
           onUpdateValue: (newVal) => {
-            formItem.value.value = 111
+            formItem.value.value = newVal
           },
           onVnodeMounted: () => {
             nextTick(() => {
@@ -241,8 +243,9 @@
       label: '作业内容',
 
       required: true,
-      value: ref('22222'),
+      value: ref('null'),
       render: (formItem) => {
+        // formItem.value.value = formItem.value.value ? formItem.value.value : '1111'
         return h(NInput, {
           value: formItem.value.value,
           onUpdateValue: (newVal) => {
@@ -265,16 +268,30 @@
       label: '作业方案',
       value: ref(null),
       render: (formItem) => {
+        let targetObj = { aaa: '111' } as any
         return h(
           NUpload,
           {
+            max: 1,
+            data: targetObj,
             responseType: 'json',
             action: baseURL + 'user/upload',
             headers: "{'Content-Type': 'application/form-data; charset=UTF-8'}",
+            onBeforeUpload: ({ file }: { file: any }) => {
+              const originalFileName = file?.file?.name ? file.file.name : '情况文件.docx'
+              const encodedFileName = encodeURIComponent(originalFileName)
+              // const fileExtension = extname(originalFileName)
+              targetObj.newName = encodedFileName
+              // file.file.name = encodedFileName + fileExtension
+              // file.file.originalname = encodedFileName + fileExtension
+              return true
+            },
             onFinish: ({ file, event }: { file: UploadFileInfo; event?: ProgressEvent }) => {
               console.log(event)
-              // message.success((event?.target as XMLHttpRequest).response)
-              const ext = file.name.split('.')[1]
+
+              // message2.success('上传成功！')
+              // const ext = file.name.split('.')[1]
+              formItem.value.value = (event?.target as XMLHttpRequest).response.data
               console.log(file.name)
               console.log(file)
               // file.name = `更名.${ext}`
@@ -291,6 +308,20 @@
       },
     },
   ] as Array<FormItem>
+  interface FileInfo {
+    id: string
+    name: string
+    batchId?: string | null
+    percentage?: number | null
+    status: 'pending' | 'uploading' | 'finished' | 'removed' | 'error'
+    url?: string | null
+    file?: File | null
+    thumbnailUrl?: string | null
+    type?: string | null
+    fullPath?: string | null
+  }
+  type SettledFileInfo = Required<FileInfo>
+  // const message2 = useMessage()
   const itemFormOptions2 = [
     {
       key: 'nameee',
