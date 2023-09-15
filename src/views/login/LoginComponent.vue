@@ -139,7 +139,7 @@
     components: { PhoneIcon, PasswordIcon, LogoGithub, LogoAlipay, LogoWechat },
     setup() {
       const { version } = useAppInfo()
-      const username = ref('admin')
+      const username = ref('技术部')
       const password = ref('123456')
       const autoLogin = ref(true)
       const loading = ref(false)
@@ -204,7 +204,7 @@
     overflow: hidden;
     height: 100vh;
     width: 100%;
-    @media screen and (max-width:960px) {
+    @media screen and (max-width: 960px) {
       .left {
         display: none !important;
       }

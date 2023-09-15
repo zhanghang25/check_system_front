@@ -12,7 +12,6 @@ import {
   duanShangRoutes,
   adminRoutesMy,
 } from '@/router/routes/constants'
-
 const usePermissionStore = defineStore('permission-route', {
   state: () => {
     return {

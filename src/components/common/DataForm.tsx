@@ -121,6 +121,7 @@ export default defineComponent({
                         NFormItemGridItem,
                         {
                           label: it.label,
+                          style: !it.hidden ? '' : 'position:absolute;left: -9999px'
                         },
                         {
                           default: renderItem(it),
@@ -135,6 +136,7 @@ export default defineComponent({
                   NFormItem,
                   {
                     label: it.label,
+                    style: !it.hidden ? '' : 'position:absolute;left: -9999px',
                     path: it.path || (it.key as string),
                   },
                   {

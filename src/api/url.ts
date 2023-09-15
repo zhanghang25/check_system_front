@@ -17,6 +17,14 @@ export const addUserInfo = '/addUser'
 // export const getMenuListByRoleId = '/getMenusByRoleId'
 export const getMenuListByRoleId = 'user/info'
 
+export const getCheJianRecord = 'record/page'
+
+export const addCheJianRecord = 'record/create'
+
+export const deleteCheJianRecord = 'record/delete'
+
+export const checkCheJianRecord = 'record/check'
+
 export const getAllMenuByRoleId = '/getAllMenuByRoleId'
 
 export const deleteUserById = '/deleteUserById'
