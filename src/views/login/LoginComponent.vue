@@ -17,12 +17,7 @@
         <div class="form-wrapper">
           <div class="form-title">账号登录</div>
           <div class="item-wrapper">
-            <n-input
-              v-model:value="username"
-              placeholder="请输入用户名/手机号"
-              prefix-icon="el-icon-user"
-              clearable
-            />
+            <n-select filterable :options="userAccount" v-model:value="username" />
           </div>
           <div class="mt-4 item-wrapper">
             <n-input
@@ -67,13 +62,7 @@
         <div class="mt-4 text-lg font-bold text-white"> Admin Work </div>
       </div>
       <div class="content">
-        <n-input round placeholder="请输入用户名/手机号" size="large" v-model:value="username">
-          <template #prefix>
-            <n-icon>
-              <PhoneIcon />
-            </n-icon>
-          </template>
-        </n-input>
+        <n-select filterable :options="userAccount" v-model:value="username" />
         <n-input
           class="mt-10"
           round
@@ -117,11 +106,11 @@
 </template>
 
 <script lang="ts">
-  import { computed, defineComponent, ref } from 'vue'
+  import { computed, defineComponent, ref, onMounted, nextTick } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import ImageBg1 from '@/assets/img_login_bg.png'
   import { post, Response } from '@/api/http'
-  import { login } from '@/api/url'
+  import { login, getCheJianAndDuanShang } from '@/api/url'
   import { DeviceType, UserState } from '@/store/types'
   import { useMessage } from 'naive-ui'
   import {
@@ -136,10 +125,10 @@
   import useAppConfigStore from '@/store/modules/app-config'
   export default defineComponent({
     name: 'Login',
-    components: { PhoneIcon, PasswordIcon, LogoGithub, LogoAlipay, LogoWechat },
+    components: { PasswordIcon, LogoGithub, LogoAlipay, LogoWechat },
     setup() {
       const { version } = useAppInfo()
-      const username = ref('技术部')
+      const username = ref('')
       const password = ref('123456')
       const autoLogin = ref(true)
       const loading = ref(false)
@@ -151,6 +140,14 @@
       const isMobileScreen = computed(() => {
         return appConfig.deviceType === DeviceType.MOBILE
       })
+      const userAccount = ref([])
+      onMounted(async () => {
+        nextTick(async () => {
+          const res = await post({ url: getCheJianAndDuanShang })
+          userAccount.value = res.data
+        })
+      })
+
       const onLogin = () => {
         loading.value = true
         post({
@@ -183,6 +180,7 @@
         autoLogin,
         loading,
         onLogin,
+        userAccount,
         ImageBg1,
         version,
       }

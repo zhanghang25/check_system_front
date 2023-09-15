@@ -8,7 +8,7 @@ export const login = '/user/login'
 
 export const register = '/user/register'
 
-export const getCheJian = '/user/getCheJian'
+export const getCheJianAndDuanShang = '/user/getCheJian'
 
 export const updateUserInfo = '/updateUser'
 

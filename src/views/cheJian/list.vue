@@ -45,6 +45,9 @@
     </ModalDialog>
     <ModalDialog ref="modalDialog2" @confirm="onDataFormConfirm2">
       <template #content>
+        <NButton style="margin-block: 10px" type="info" ghost @click="seePlan"
+          >查看工作计划</NButton
+        >
         <DataForm ref="itemDataFormRef2" :options="itemFormOptions2" />
       </template>
     </ModalDialog>
@@ -54,10 +57,9 @@
 <script lang="ts">
   import { baseURL } from '@/api/axios.config'
   import { addCheJianRecord, checkCheJianRecord, getMenuListByRoleId } from '@/api/url'
-  import { extname } from 'path-browserify'
-  import { get, post, Response } from '@/api/http'
-  import { getCheJian, getTableList, getCheJianRecord, deleteCheJianRecord } from '@/api/url'
-  import { renderTag, renderRadioButtonGroup, renderSelect, renderDatePicker } from '@/hooks/form'
+  import { get, post } from '@/api/http'
+  import { getCheJianRecord, deleteCheJianRecord } from '@/api/url'
+  import { renderTag, renderRadioButtonGroup, renderDatePicker } from '@/hooks/form'
   import {
     usePagination,
     useRowKey,
@@ -70,28 +72,19 @@
   import { DataFormType, FormItem, ModalDialogType } from '@/types/components'
   import {
     DataTableColumn,
-    NAvatar,
-    NCheckbox,
-    NCheckboxGroup,
-    NDatePicker,
     NInput,
-    NSelect,
-    NSpace,
-    NTimePicker,
     SelectOption,
-    useMessage,
     useDialog,
     NButton,
     NUpload,
+    NSelect,
   } from 'naive-ui'
   import type { UploadFileInfo } from 'naive-ui'
-  import { defineComponent, h, onMounted, ref, nextTick, shallowReactive } from 'vue'
-  import UploadSettledFileInfo from 'naive-ui'
+  import { defineComponent, h, onMounted, ref, nextTick } from 'vue'
   const modalDialog = ref<ModalDialogType | null>(null)
   const modalDialog2 = ref<ModalDialogType | null>(null)
   const itemDataFormRef = ref<DataFormType | null>(null)
   const itemDataFormRef2 = ref<DataFormType | null>(null)
-  let options = [] as Array<{ label: string; value: number }>
   const itemFormOptions = [
     {
       key: 'yanAn',
@@ -102,7 +95,7 @@
         return h(NInput, {
           value: formItem.value.value,
           onUpdateValue: (newVal) => {
-            formItem.value.value = 111
+            formItem.value.value = newVal
           },
           onVnodeMounted: () => {
             nextTick(() => {
@@ -135,7 +128,7 @@
         return h(NInput, {
           value: formItem.value.value,
           onUpdateValue: (newVal) => {
-            formItem.value.value = 111
+            formItem.value.value = newVal
           },
           onVnodeMounted: () => {
             nextTick(async () => {
@@ -165,7 +158,7 @@
         return h(NInput, {
           value: formItem.value.value,
           onUpdateValue: (newVal) => {
-            formItem.value.value = 111
+            formItem.value.value = newVal
           },
 
           onVnodeMounted: () => {
@@ -343,10 +336,7 @@
             onBeforeUpload: ({ file }: { file: any }) => {
               const originalFileName = file?.file?.name ? file.file.name : '情况文件.docx'
               const encodedFileName = encodeURIComponent(originalFileName)
-              // const fileExtension = extname(originalFileName)
               targetObj.newName = encodedFileName
-              // file.file.name = encodedFileName + fileExtension
-              // file.file.originalname = encodedFileName + fileExtension
               return true
             },
             onFinish: ({ file, event }: { file: UploadFileInfo; event?: ProgressEvent }) => {
@@ -371,20 +361,6 @@
       },
     },
   ] as Array<FormItem>
-  interface FileInfo {
-    id: string
-    name: string
-    batchId?: string | null
-    percentage?: number | null
-    status: 'pending' | 'uploading' | 'finished' | 'removed' | 'error'
-    url?: string | null
-    file?: File | null
-    thumbnailUrl?: string | null
-    type?: string | null
-    fullPath?: string | null
-  }
-  type SettledFileInfo = Required<FileInfo>
-  // const message2 = useMessage()
   const itemFormOptions2 = [
     {
       key: 'checkPerson',
@@ -486,7 +462,7 @@
     },
     {
       key: 'checkStatus',
-      label: '审核装填',
+      label: '审核状态',
       value: ref(null),
       optionItems: [
         {
@@ -518,7 +494,6 @@
       pagination.pageSize = 20
       const naiveDailog = useDialog()
       const table = useTable()
-      const message = useMessage()
       const rowKey = useRowKey('id')
       const tableColumns = useTableColumn(
         [
@@ -593,8 +568,11 @@
               const year = date.getFullYear()
               const month = String(date.getMonth() + 1).padStart(2, '0')
               const day = String(date.getDate()).padStart(2, '0')
-              const formattedDate = `${year}-${month}-${day}`
-              return formattedDate != '1970-01-01'
+              const hour = String(date.getHours()).padStart(2, '0')
+              const minute = String(date.getMinutes()).padStart(2, '0')
+              const second = String(date.getSeconds()).padStart(2, '0')
+              const formattedDate = `${year}-${month}-${day} ${hour}:${minute}:${second}`
+              return formattedDate != '1970-01-01 08:00:00'
                 ? renderTag(formattedDate, { type: 'error', size: 'medium' })
                 : ''
             },
@@ -625,11 +603,16 @@
         } as DataTableColumn
       )
 
-      let checkRecordId: number = 0
+      function seePlan() {
+        window.location.href = baseURL + workPlan
+      }
+      let checkRecordId = 0
+      let workPlan = ''
       function onUpdateItem(item: any) {
         modalDialog2.value?.toggle()
         nextTick(() => {
           checkRecordId = item.id
+          workPlan = item.workPlan
           // formItems.forEach((it) => {
           //   const key = it.key
           //   const propName = item[key]
@@ -689,20 +672,20 @@
       function onDataFormConfirm2() {
         if (itemDataFormRef2.value?.validator()) {
           const params = itemDataFormRef2?.value.generatorParams()
-          naiveDailog.success({
-            title: '提示',
-            positiveText: '确定',
-            content: '确定审批吗？',
-            onPositiveClick: () => {
-              post({
-                url: checkCheJianRecord + '/' + checkRecordId,
-                data: params,
-              }).then(() => {
-                modalDialog2.value?.toggle()
-                doRefresh()
-              })
-            },
+          // naiveDailog.success({
+          //   title: '提示',
+          //   positiveText: '确定',
+          //   content: '确定审批吗？',
+          //   onPositiveClick: () => {
+          post({
+            url: checkCheJianRecord + '/' + checkRecordId,
+            data: params,
+          }).then(() => {
+            modalDialog2.value?.toggle()
+            doRefresh()
           })
+          //   },
+          // })
         }
       }
       function onDataFormConfirm() {
@@ -710,10 +693,11 @@
           post({ url: addCheJianRecord, data: itemDataFormRef.value.generatorParams() }).then(
             () => {
               modalDialog.value?.toggle()
+              doRefresh()
               naiveDailog.success({
                 title: '提示',
                 positiveText: '确定',
-                content: '模拟部门添加/编辑成功，数据为：',
+                content: '提交成功！',
                 // JSON.stringify(itemDataFormRef.value.generatorParams()),
               })
             }
@@ -730,6 +714,8 @@
       return {
         ...table,
         checkRecordId,
+        workPlan,
+        seePlan,
         rowKey,
         pagination,
         searchForm,
