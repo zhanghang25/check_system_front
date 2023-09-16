@@ -41,6 +41,7 @@ export interface FormItem extends TableSearchItem {
   disabled?: Ref<boolean> | boolean
   optionItems?: Array<SelectOptionItem | TreeSelectOption>
   path?: string
+  labelWidth?: number
   reset?: (formItem: FormItem) => void
   render?: (formItem: FormItem) => VNode
 }

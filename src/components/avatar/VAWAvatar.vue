@@ -14,24 +14,116 @@
       </div>
     </n-dropdown>
   </div>
+  <ModalDialog ref="modalDialog" @confirm="onDataFormConfirm">
+    <template #content>
+      <DataForm ref="itemDataFormRef" :options="itemFormOptions" />
+    </template>
+  </ModalDialog>
 </template>
 
 <script lang="ts">
-  import { NIcon, useDialog } from 'naive-ui'
-  import { defineComponent, h } from 'vue'
+  import { NIcon, useDialog, useMessage } from 'naive-ui'
+  import { defineComponent, ref, h } from 'vue'
   import { Menu, LogInOutline, CaretDownSharp } from '@vicons/ionicons5'
   import useUserStore from '@/store/modules/user'
   import { useRouter } from 'vue-router'
+  import { ModalDialogType, DataFormType, FormItem } from '@/types/components'
+  import { renderInput } from '@/hooks/form'
+  import { updatePassword } from '@/api/url'
 
+  const modalDialog = ref<ModalDialogType | null>(null)
+  const itemDataFormRef = ref<DataFormType | null>(null)
+  const itemFormOptions = [
+    {
+      key: 'oldPassword',
+      label: '老密码',
+      required: true,
+      value: ref(null),
+      render: (formItem) => {
+        return renderInput(formItem.value, {
+          placeholder: '请输入老密码！',
+          type: 'password',
+        })
+      },
+      validator: (formItem, message) => {
+        if (!formItem.value.value) {
+          message.error('请输入老密码')
+          return false
+        }
+        return true
+      },
+    },
+    {
+      key: 'password',
+      label: '新密码',
+      required: true,
+      value: ref(null),
+      render: (formItem) => {
+        return renderInput(formItem.value, {
+          placeholder: '请输入新密码！',
+          type: 'password',
+        })
+      },
+      validator: (formItem, message) => {
+        if (!formItem.value.value) {
+          message.error('请输入新密码')
+          return false
+        }
+
+        return true
+      },
+    },
+    {
+      key: 'newPassword',
+      label: '重复新密码',
+      required: true,
+      value: ref(null),
+      render: (formItem) => {
+        return renderInput(formItem.value, {
+          placeholder: '请输入新密码！',
+          type: 'password',
+        })
+      },
+      validator: (formItem, message) => {
+        if (!formItem.value.value) {
+          message.error('请输入新密码')
+          return false
+        }
+
+        return true
+      },
+    },
+  ] as Array<FormItem>
+  import { post } from '@/api/http'
   export default defineComponent({
     name: 'VAWAvatar',
     components: { CaretDownSharp },
     setup() {
       const userStore = useUserStore()
+      const message = useMessage()
+      const naiveDailog = useDialog()
       const router = useRouter()
+      function onDataFormConfirm() {
+        if (itemDataFormRef.value?.validator()) {
+          const params = itemDataFormRef.value.generatorParams()
+          if (params.password != params.newPassword) {
+            message.error('重复密码错误！')
+            return false
+          }
+          post({ url: updatePassword, data: params }).then(() => {
+            modalDialog.value?.toggle()
+            naiveDailog.success({
+              title: '提示',
+              positiveText: '确定',
+              content: '提交成功！',
+              // JSON.stringify(itemDataFormRef.value.generatorParams()),
+            })
+          })
+        }
+      }
       const options = [
         {
-          label: '个人中心',
+          label: '修改密码',
           key: 'personal-center',
           icon: () =>
             h(NIcon, null, {
@@ -48,7 +140,8 @@
         },
       ]
       function personalCenter() {
-        router.push('/personal/info')
+        modalDialog.value?.toggle()
+        // router.push('/personal/info')
       }
       const dialog = useDialog()
       function logout() {
@@ -78,6 +171,10 @@
         userStore,
         options,
         handleSelect,
+        onDataFormConfirm,
+        itemFormOptions,
+        modalDialog,
+        itemDataFormRef,
       }
     },
   })

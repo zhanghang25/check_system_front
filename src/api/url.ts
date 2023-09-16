@@ -8,7 +8,9 @@ export const login = '/user/login'
 
 export const register = '/user/register'
 
-export const getCheJianAndDuanShang = '/user/getCheJian'
+export const getCheJianAndDuanShang = '/user/getAllAccounts'
+
+export const getCheJian = '/user/getCheJian'
 
 export const updateUserInfo = '/updateUser'
 
@@ -16,6 +18,8 @@ export const addUserInfo = '/addUser'
 
 // export const getMenuListByRoleId = '/getMenusByRoleId'
 export const getMenuListByRoleId = 'user/info'
+
+export const updatePassword = 'user/update_password'
 
 export const getCheJianRecord = 'record/page'
 

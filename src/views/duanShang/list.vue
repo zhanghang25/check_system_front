@@ -12,14 +12,11 @@
             <DataForm
               ref="searchForm"
               :form-config="{
-                labelWidth: 60,
+                labelWidth: 120,
               }"
               :options="conditionItems"
               preset="grid-item"
             />
-          </template>
-          <template #top-right>
-            <AddButton @add="onAddItem" />
           </template>
         </TableHeader>
       </template>
@@ -56,7 +53,7 @@
 
 <script lang="ts">
   import { baseURL } from '@/api/axios.config'
-  import { addCheJianRecord, checkCheJianRecord, getMenuListByRoleId } from '@/api/url'
+  import { addCheJianRecord, checkCheJianRecord, getMenuListByRoleId, getCheJian } from '@/api/url'
   import { get, post } from '@/api/http'
   import { getCheJianRecord, deleteCheJianRecord } from '@/api/url'
   import { renderTag, renderRadioButtonGroup, renderDatePicker } from '@/hooks/form'
@@ -78,14 +75,16 @@
     NButton,
     NUpload,
     NSelect,
+    useMessage,
   } from 'naive-ui'
   import type { UploadFileInfo } from 'naive-ui'
   import { defineComponent, h, onMounted, ref, nextTick } from 'vue'
-  import { useRouter } from 'vue-router'
   const modalDialog = ref<ModalDialogType | null>(null)
   const modalDialog2 = ref<ModalDialogType | null>(null)
   const itemDataFormRef = ref<DataFormType | null>(null)
   const itemDataFormRef2 = ref<DataFormType | null>(null)
+  let options = [] as Array<SelectOption>
+  const searchForm = ref<DataFormType | null>(null)
   const itemFormOptions = [
     {
       key: 'yanAn',
@@ -412,6 +411,35 @@
   ] as Array<FormItem>
   const conditionItems: Array<FormItem> = [
     {
+      key: 'cheJianId',
+      label: '作业单位',
+      //   type: 'input',
+      // optionItems: options,
+      value: ref(null),
+      render: (formItem) => {
+        return h(NSelect, {
+          options,
+          value: formItem.value.value,
+          onUpdateValue: (newVal: any) => {
+            formItem.value.value = newVal
+          },
+          onUpdateShow: async () => {
+            let res = await post({ url: getCheJian })
+            options = res.data
+            console.log('options', options)
+            searchForm.value?.$forceUpdate()
+          },
+        })
+      },
+      validator: (formItem, message) => {
+        if (!formItem.value.value) {
+          message.error('请输入作业单位')
+          return false
+        }
+        return true
+      },
+    },
+    {
       key: 'jobType',
       label: '专业系统',
       value: ref(null),
@@ -490,10 +518,10 @@
   export default defineComponent({
     name: 'TableWithSearch',
     setup() {
-      const searchForm = ref<DataFormType | null>(null)
       const pagination = usePagination(doRefresh)
       pagination.pageSize = 20
       const naiveDailog = useDialog()
+      const message = useMessage()
       const table = useTable()
       const rowKey = useRowKey('id')
       const tableColumns = useTableColumn(
@@ -503,12 +531,12 @@
           {
             title: '作业部门',
             key: 'yanAn',
-            width: 80,
+            width: 120,
           },
           {
             title: '作业单位',
             key: 'cheJian',
-            width: 80,
+            width: 200,
           },
           {
             title: '作业日期',
@@ -525,7 +553,7 @@
             key: 'jobType',
             render: (rowData) =>
               renderTag(rowData.jobType == 1 ? '线路' : '桥路', {
-                type: rowData.jobType ? 'success' : 'error',
+                type: rowData.jobType == 1 ? 'success' : 'info',
                 size: 'medium',
               }),
             width: 80,
@@ -536,7 +564,7 @@
             width: 80,
             render: (rowData) =>
               renderTag(rowData.gradeType == 1 ? 'I级' : 'II级', {
-                type: rowData.gradeType == 1 ? 'success' : 'error',
+                type: rowData.gradeType == 1 ? 'warning' : 'error',
                 size: 'medium',
               }),
           },
@@ -586,7 +614,7 @@
               return useRenderAction([
                 {
                   label: '查看计划',
-                  type: 'error',
+                  type: 'warning',
                   onClick() {
                     window.location.href = baseURL + rowData.workPlan
                   },
@@ -610,6 +638,10 @@
       let checkRecordId = 0
       let workPlan = ''
       function onUpdateItem(item: any) {
+        if (item.checkStatus == 1) {
+          message.error('您已经审核过了，无需再审核！')
+          return
+        }
         modalDialog2.value?.toggle()
         nextTick(() => {
           checkRecordId = item.id
@@ -727,7 +759,6 @@
         onAddItem,
         onDeleteItem,
         onUpdateItem,
-        goLogin,
         onDataFormConfirm,
         itemFormOptions,
         modalDialog,
