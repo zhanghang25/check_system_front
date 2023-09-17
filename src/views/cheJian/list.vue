@@ -466,10 +466,10 @@
       },
     },
   ]
+  const searchForm = ref<DataFormType | null>(null)
   export default defineComponent({
     name: 'TableWithSearch',
     setup() {
-      const searchForm = ref<DataFormType | null>(null)
       const pagination = usePagination(doRefresh)
       pagination.pageSize = 20
       const naiveDailog = useDialog()
@@ -636,10 +636,14 @@
         post({
           url: getCheJianRecord,
           data: () => {
+            let tmpParams = searchForm.value?.generatorParams()
+              ? searchForm.value.generatorParams()
+              : permanentSearch.value
+
             return {
               page: pagination.page,
               pageSize: pagination.pageSize,
-              ...searchForm.value?.generatorParams(),
+              ...tmpParams,
             }
           },
         })
@@ -649,10 +653,12 @@
           })
           .catch(console.log)
       }
+      const permanentSearch = ref({})
       function onSearch() {
         // message.success(
         //   '模拟查询成功，参数为：' + JSON.stringify(searchForm.value?.generatorParams())
         // )
+        permanentSearch.value = searchForm.value?.generatorParams()
         doRefresh()
       }
       function onAddItem() {
@@ -674,6 +680,7 @@
             data: params,
           }).then(() => {
             modalDialog2.value?.toggle()
+            itemDataFormRef2.value?.reset()
             doRefresh()
           })
           //   },
@@ -698,6 +705,8 @@
       }
       function onResetSearch() {
         searchForm.value?.reset()
+
+        permanentSearch.value = searchForm.value?.generatorParams()
       }
       onMounted(async () => {
         table.tableHeight.value = await useTableHeight()
@@ -726,6 +735,7 @@
         itemFormOptions2,
         modalDialog2,
         itemDataFormRef2,
+        permanentSearch,
       }
     },
   })

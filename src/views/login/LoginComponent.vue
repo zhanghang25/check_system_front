@@ -7,10 +7,10 @@
           <div class="logo-wrapper">
             <img src="../../assets/logo.png" />
           </div>
-          <div class="title">Admin Work</div>
-          <div class="sub-title">Vue3 + Vite2 + Typescript + Naive UI</div>
-          <div class="flex-1 flex justify-center items-center ttppii"> 生活，应该还有诗和远方 </div>
-          <div class="bottom-wrapper">Admin Work {{ version }} · Made by qingqingxuan</div>
+          <div class="title">延安工务段</div>
+          <div class="sub-title">作业方案管理系统</div>
+          <div class="flex-1 flex justify-center items-center ttppii"> </div>
+          <div class="bottom-wrapper"></div>
         </div>
       </div>
       <div class="right">
@@ -40,7 +40,7 @@
             </div>
           </div>
         </div>
-        <div class="third-login">
+        <div v-if="false" class="third-login">
           <n-divider dashed>第三方登录</n-divider>
           <n-space justify="center">
             <n-icon color="var(--primary-color)" size="20">
@@ -87,7 +87,7 @@
           <a class="text-white" type="primary">忘记密码？</a>
         </div>
       </div>
-      <div class="footer">
+      <div v-if="false" class="footer">
         <n-divider>第三方登录</n-divider>
         <div class="flex justify-evenly">
           <n-icon color="#c3c3c3" size="30">
