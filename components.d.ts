@@ -87,7 +87,6 @@ declare module 'vue' {
     NTimePicker: typeof import('naive-ui')['NTimePicker']
     NTooltip: typeof import('naive-ui')['NTooltip']
     NTree: typeof import('naive-ui')['NTree']
-    NUpload: typeof import('naive-ui')['NUpload']
     PopoverMessage: typeof import('./src/components/common/PopoverMessage.vue')['default']
     RichTextEditor: typeof import('./src/components/common/RichTextEditor.vue')['default']
     ScrollerMenu: typeof import('./src/components/sidebar/components/ScrollerMenu.vue')['default']
